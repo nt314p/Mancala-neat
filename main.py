@@ -1,7 +1,7 @@
 import os
 import neat
 import threading
-import visualize
+# import visualize
 
 #    *5 *4 *3 *2 *1 *0
 #    12 11 10  9  8  7
@@ -15,7 +15,7 @@ FITNESS_WIN = 100
 FITNESS_LOSS = -30
 FITNESS_STONES_GAINED_FACTOR = 1
 FITNESS_VALID_MOVE = 0.5
-FITNESS_INVALID_MOVE = -1000
+FITNESS_INVALID_MOVE = -100000
 ELIMINATE_ON_INVALID_MOVE = True
 
 class Player:
