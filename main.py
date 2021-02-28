@@ -9,13 +9,14 @@ import visualize
 #     0  1  2  3  4  5
 #    *0 *1 *2 *3 *4 *5
 
+POCKET_MAX_STONES = 29
+
 FITNESS_WIN = 100
-FITNESS_LOSS = -10
+FITNESS_LOSS = -30
 FITNESS_STONES_GAINED_FACTOR = 1
 FITNESS_VALID_MOVE = 0.5
-FITNESS_INVALID_MOVE = -500
+FITNESS_INVALID_MOVE = -1000
 ELIMINATE_ON_INVALID_MOVE = True
-
 
 class Player:
     def takeTurn(self, board):  # should return a number from 0 to 5 indicating the pocket
@@ -42,7 +43,20 @@ class NetworkPlayer(Player):
         self.genome = genome
 
     def takeTurn(self, board):
-        outputs = self.net.activate(board)  # array of 6 outputs
+        boardInput = []
+
+        for i in range((POCKET_MAX_STONES + 1) * 12):
+            boardInput.append(0)
+
+        index = 0
+        for i in range(14):
+            if i == 6 or i == 13:
+                continue
+            
+            boardInput[12 * board[i] + index] = 1
+            index += 1
+
+        outputs = self.net.activate(boardInput)
 
         highest = 0
         for i in range(1, len(outputs)):  # highest output is chosen
@@ -63,7 +77,6 @@ class NetworkPlayer(Player):
 
     def validMove(self):
         self.genome.fitness += FITNESS_VALID_MOVE
-
 
 def game(p1, p2, verbose=False):
     if verbose:
@@ -188,7 +201,6 @@ def printBoard(board):
     print(line)
     print("    *0 *1 *2 *3 *4 *5")
 
-
 # p1 = Player()
 # p2 = Player()
 # game(p1, p2, True)
@@ -231,7 +243,7 @@ def eval_genomes(genomes, config):
 
         if prevBest is None or prevBest != best:
             print(best)
-            visualize.draw_net(config, best, True)
+            # visualize.draw_net(config, best, True)
             prevBest = best
 
         # visualize.plot_stats(stats, ylog=False, view=True)
@@ -241,11 +253,6 @@ def eval_genomes(genomes, config):
 
 
 def run(config_file):
-    """
-    runs the NEAT algorithm to train a neural network to play flappy bird.
-    :param config_file: location of config file
-    :return: None
-    """
     config = neat.config.Config(neat.DefaultGenome, neat.DefaultReproduction,
                                 neat.DefaultSpeciesSet, neat.DefaultStagnation,
                                 config_file)
@@ -264,7 +271,7 @@ def run(config_file):
     global prevBest
     prevBest = None
 
-    winner = p.run(eval_genomes, 300)
+    winner = p.run(eval_genomes)
 
     # show final stats
     print('\nBest genome:\n{!s}'.format(winner))
